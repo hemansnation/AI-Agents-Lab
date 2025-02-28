@@ -10,7 +10,7 @@ app = Flask(__name__)
 
 rule_agent = RuleBasedAgent()
 memory_agent = MemoryAgent()
-chat_agent = ChatAgent()
+chat_agent = ChatAgent(WEATHER_API_KEY)
 llm_agent = LLMAgent()
 
 cache = {}
@@ -25,4 +25,34 @@ def chat():
             response = cache[user_input]
         elif user_input.startswith("weather in"):
             response = chat_agent.respond(user_input)
-            
+            cache[user_input] = response
+        elif user_input.startswith("my name is") or user_input == "what's my name":
+            response = memory_agent.respond(user_input)
+            cache[user_input] = response
+        elif user_input in rule_agent.rules:
+            response = rule_agent.respond(user_input)
+            cache[user_input] = response
+        else:
+            response = llm_agent.respond(user_input)
+            cache[user_input] = response
+        
+        latency = time.time() - start_time
+        return render_template_string('''
+            <h1>First AI Agent</h1>
+            <p><b>User:</b> {{ user_input }}</p>
+            <p><b>Agent:</b> {{ response }}</p>
+            <p><b>Latency:</b> {{ latency }}</p>
+            <form method="post">
+                <input type="text" name="message" placeholder='Type Here...' autofocus />
+                <input type="submit" value="Send" />
+            </form>
+        ''', user_input=user_input, response=response, latency=f"{latency: .2f}")
+    return render_template_string('''
+        <form method="post">
+            <input type="text" name="message" placeholder='Type Here...' autofocus />
+            <input type="submit" value="Send" />
+        </form>
+    ''')
+
+if __name__ == '__main__':
+    app.run(debug=True)

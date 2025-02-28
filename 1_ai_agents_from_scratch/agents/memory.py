@@ -16,7 +16,7 @@ class MemoryAgent:
             name = user_input[11:]
             self.memory.append(f"Agent: Got it, your name is {name}!")
             return f"Nice to meet you, {name}!"
-        elif user_input == "what's my name": and any("your name is" in m for m in self.memory):
+        elif user_input == "what's my name" and any("your name is" in m for m in self.memory):
             for m in reversed(self.memory):
                 if "your name is" in m:
                     name = m.split("your name is ")[1].strip("!")
